@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BDT 存提款處理時間營運報表</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #e6e9f0;
+      --primary: #2563eb;
+      --primary-soft: #e8f0ff;
+      --green: #16a34a;
+      --green-soft: #eaf8ef;
+      --red: #dc2626;
+      --red-soft: #fff1f2;
+      --amber: #d97706;
+      --amber-soft: #fff7ed;
+      --slate: #475569;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 999px;
+      color: var(--slate);
+      padding: 6px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .filter-panel {
+      position: sticky;
+      top: 18px;
+      padding: 18px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .field {
+      border-top: 1px solid var(--line);
+      padding: 16px 0;
+    }
+
+    .field:first-of-type {
+      border-top: 0;
+      padding-top: 2px;
+    }
+
+    .field label.title {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .select-tools {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .mini {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .mini.clear {
+      background: #f8fafc;
+      color: var(--slate);
+      border: 1px solid var(--line);
+    }
+
+    .checkbox-list {
+      display: grid;
+      gap: 8px;
+      max-height: 170px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .choice input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi {
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-height: 116px;
+    }
+
+    .kpi .name {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .kpi .value {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .kpi .note {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .kpi.good .value { color: var(--green); }
+    .kpi.warn .value { color: var(--amber); }
+    .kpi.bad .value { color: var(--red); }
+
+    .section {
+      padding: 18px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .section-desc {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      font-size: 13px;
+      min-width: 880px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #344054;
+      text-align: left;
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background: #fbfdff;
+    }
+
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill.deposit { color: #1d4ed8; background: #eff6ff; }
+    .pill.withdraw { color: #7c3aed; background: #f5f3ff; }
+    .pill.pass { color: #15803d; background: var(--green-soft); }
+    .pill.reject { color: #b91c1c; background: var(--red-soft); }
+    .pill.warn { color: #b45309; background: var(--amber-soft); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .bars {
+      display: grid;
+      gap: 12px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 170px 1fr 80px;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .bar-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .bar-track {
+      height: 12px;
+      background: #edf2f7;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #60a5fa, #2563eb);
+      border-radius: 999px;
+      min-width: 2px;
+    }
+
+    .insights {
+      display: grid;
+      gap: 10px;
+    }
+
+    .insight {
+      border: 1px solid var(--line);
+      border-left-width: 5px;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #fff;
+    }
+
+    .insight strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .insight p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .insight.good { border-left-color: var(--green); }
+    .insight.warn { border-left-color: var(--amber); }
+    .insight.bad { border-left-color: var(--red); }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .filter-panel {
+        position: static;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 16px; }
+      .hero { flex-direction: column; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .bar-row { grid-template-columns: 1fr; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div>
+        <h1>BDT 存提款處理時間營運報表</h1>
+        <p>依照原型資料重製為可互動的營運監控報表，可用 Deposit / Withdraw、渠道、Payment 與審核狀態進行多選篩選，並即時產生 KPI、渠道績效與明細報表。</p>
+        <div class="badge-row">
+          <span class="badge">資料區間：2026-05-13 08:00:00 ~ 10:00:00</span>
+          <span class="badge">報表口徑：交易筆數 n_trans</span>
+          <span class="badge">SLA 判斷：5 分鐘內 / 超過 5 分鐘</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="resetBtn">重置篩選</button>
+        <button class="btn" id="exportBtn">匯出 CSV</button>
+        <button class="btn primary" onclick="window.print()">列印報表</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel filter-panel">
+        <div class="panel-title">
+          <h2>報表篩選條件</h2>
+          <span class="badge" id="rowCountBadge">0 筆</span>
+        </div>
+
+        <div class="field">
+          <label class="title">交易類型｜Deposit / Withdraw</label>
+          <div class="select-tools">
+            <button class="mini" data-action="all" data-target="type">全選</button>
+            <button class="mini clear" data-action="clear" data-target="type">清除</button>
+          </div>
+          <div class="checkbox-list" id="typeOptions"></div>
+          <div class="helper">可同時查看存款與提款，也可以只看單一類型。</div>
+        </div>
+
+        <div class="field">
+          <label class="title">渠道 Channel</label>
+          <div class="select-tools">
+            <button class="mini" data-action="all" data-target="channel">全選</button>
+            <button class="mini clear" data-action="clear" data-target="channel">清除</button>
+          </div>
+          <div class="checkbox-list" id="channelOptions"></div>
+          <div class="helper">已將 bKash Payment / BKASH 統一顯示為 BKASH，方便跨 Deposit / Withdraw 對照。</div>
+        </div>
+
+        <div class="field">
+          <label class="title">Payment 付款方式</label>
+          <div class="select-tools">
+            <button class="mini" data-action="all" data-target="payment">全選</button>
+            <button class="mini clear" data-action="clear" data-target="payment">清除</button>
+          </div>
+          <div class="checkbox-list" id="paymentOptions"></div>
+        </div>
+
+        <div class="field">
+          <label class="title">審核狀態</label>
+          <div class="select-tools">
+            <button class="mini" data-action="all" data-target="status">全選</button>
+            <button class="mini clear" data-action="clear" data-target="status">清除</button>
+          </div>
+          <div class="checkbox-list" id="statusOptions"></div>
+        </div>
+
+        <button class="btn primary" style="width:100%;" id="applyBtn">產生報表</button>
+        <div class="footer-note">
+          計算方式：平均處理時間採交易筆數加權平均；通過率＝審核通過交易數 / 篩選後總交易數；超時率＝超過五分鐘人次 / 篩選後總交易數。
+        </div>
+      </aside>
+
+      <section class="content">
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <h2>營運異常提示</h2>
+              <p class="section-desc">依照目前篩選結果，自動標示超過 5 分鐘、平均處理時間偏高或拒絕率偏高的渠道。</p>
+            </div>
+          </div>
+          <div class="insights" id="insights"></div>
+        </section>
+
+        <div class="two-col">
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <h2>渠道超時率排行</h2>
+                <p class="section-desc">以 Channel + Deposit/Withdraw 分組，觀察超過五分鐘人次佔比。</p>
+              </div>
+            </div>
+            <div class="bars" id="overBars"></div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <h2>平均處理時間排行</h2>
+                <p class="section-desc">以交易筆數加權後的平均處理分鐘數排序。</p>
+              </div>
+            </div>
+            <div class="bars" id="avgBars"></div>
+          </section>
+        </div>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <h2>渠道績效彙總</h2>
+              <p class="section-desc">依 Deposit / Withdraw 與 Channel 彙總交易數、通過率、超時率與處理時間。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>類型</th>
+                  <th>渠道</th>
+                  <th class="num">交易數</th>
+                  <th class="num">通過率</th>
+                  <th class="num">拒絕率</th>
+                  <th class="num">5 分鐘內</th>
+                  <th class="num">超過 5 分鐘</th>
+                  <th class="num">超時率</th>
+                  <th class="num">平均處理分鐘</th>
+                  <th class="num">最大處理分鐘</th>
+                </tr>
+              </thead>
+              <tbody id="summaryBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <h2>Payment 明細報表</h2>
+              <p class="section-desc">保留原型中的 PAYMENT、STATUS2、當前 pct、當天 pct、平均與最大處理時間。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>類型</th>
+                  <th>渠道</th>
+                  <th>原始渠道名稱</th>
+                  <th>Payment</th>
+                  <th>狀態</th>
+                  <th class="num">交易數</th>
+                  <th class="num">當前 pct</th>
+                  <th class="num">當天 pct</th>
+                  <th class="num">平均分鐘</th>
+                  <th class="num">最大分鐘</th>
+                  <th class="num">5 分鐘內</th>
+                  <th class="num">超過 5 分鐘</th>
+                </tr>
+              </thead>
+              <tbody id="detailBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const DATA = [
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "BKASH",
+    "payment": "BDTTarspayDeposit",
+    "status": "審核不通過",
+    "nTrans": 2,
+    "currentPct": 100.0,
+    "dailyPct": 94.1,
+    "avgApproveMins": 10.0,
+    "maxApproveMins": 10.1,
+    "within5": 0,
+    "over5": 2
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "BKASH",
+    "payment": "SLPayDeposit",
+    "status": "審核通過",
+    "nTrans": 118,
+    "currentPct": 72.0,
+    "dailyPct": 68.1,
+    "avgApproveMins": 1.5,
+    "maxApproveMins": 19.5,
+    "within5": 116,
+    "over5": 2
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "BKASH",
+    "payment": "SLPayDeposit",
+    "status": "審核不通過",
+    "nTrans": 46,
+    "currentPct": 28.0,
+    "dailyPct": 31.9,
+    "avgApproveMins": 10.5,
+    "maxApproveMins": 11.0,
+    "within5": 0,
+    "over5": 46
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "BKASH",
+    "payment": "TigerPayDeposit",
+    "status": "審核通過",
+    "nTrans": 10,
+    "currentPct": 90.9,
+    "dailyPct": 83.3,
+    "avgApproveMins": 1.3,
+    "maxApproveMins": 3.6,
+    "within5": 10,
+    "over5": 0
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "BKASH",
+    "payment": "TigerPayDeposit",
+    "status": "審核不通過",
+    "nTrans": 1,
+    "currentPct": 9.1,
+    "dailyPct": 16.7,
+    "avgApproveMins": 10.9,
+    "maxApproveMins": 10.9,
+    "within5": 0,
+    "over5": 1
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "NAGAD",
+    "rawChannel": "NAGAD",
+    "payment": "SLPayDeposit",
+    "status": "審核通過",
+    "nTrans": 75,
+    "currentPct": 84.3,
+    "dailyPct": 85.0,
+    "avgApproveMins": 1.8,
+    "maxApproveMins": 50.6,
+    "within5": 74,
+    "over5": 1
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "NAGAD",
+    "rawChannel": "NAGAD",
+    "payment": "SLPayDeposit",
+    "status": "審核不通過",
+    "nTrans": 14,
+    "currentPct": 15.7,
+    "dailyPct": 15.0,
+    "avgApproveMins": 10.3,
+    "maxApproveMins": 10.8,
+    "within5": 0,
+    "over5": 14
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "NAGAD",
+    "rawChannel": "NAGAD",
+    "payment": "TigerPayDeposit",
+    "status": "審核通過",
+    "nTrans": 5,
+    "currentPct": 100.0,
+    "dailyPct": 92.1,
+    "avgApproveMins": 0.9,
+    "maxApproveMins": 1.6,
+    "within5": 5,
+    "over5": 0
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "ROCKET",
+    "rawChannel": "ROCKET",
+    "payment": "SLPayDeposit",
+    "status": "審核通過",
+    "nTrans": 8,
+    "currentPct": 57.1,
+    "dailyPct": 28.8,
+    "avgApproveMins": 1.6,
+    "maxApproveMins": 2.2,
+    "within5": 8,
+    "over5": 0
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "ROCKET",
+    "rawChannel": "ROCKET",
+    "payment": "SLPayDeposit",
+    "status": "審核不通過",
+    "nTrans": 6,
+    "currentPct": 42.9,
+    "dailyPct": 71.2,
+    "avgApproveMins": 10.6,
+    "maxApproveMins": 10.8,
+    "within5": 0,
+    "over5": 6
+  },
+  {
+    "type": "Deposit",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "UPay",
+    "rawChannel": "UPay",
+    "payment": "SLPayDeposit",
+    "status": "審核通過",
+    "nTrans": 1,
+    "currentPct": 100.0,
+    "dailyPct": 88.9,
+    "avgApproveMins": 1.4,
+    "maxApproveMins": 1.4,
+    "within5": 1,
+    "over5": 0
+  },
+  {
+    "type": "Withdraw",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "NAGAD",
+    "rawChannel": "Nagad Payment",
+    "payment": "SLPayWithdrawal",
+    "status": "審核通過",
+    "nTrans": 47,
+    "currentPct": 100.0,
+    "dailyPct": 98.1,
+    "avgApproveMins": 4.5,
+    "maxApproveMins": 17.2,
+    "within5": 36,
+    "over5": 11
+  },
+  {
+    "type": "Withdraw",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "ROCKET",
+    "rawChannel": "Rocket Payment",
+    "payment": "SLPayWithdrawal",
+    "status": "審核通過",
+    "nTrans": 3,
+    "currentPct": 100.0,
+    "dailyPct": 100.0,
+    "avgApproveMins": 7.6,
+    "maxApproveMins": 13.3,
+    "within5": 1,
+    "over5": 2
+  },
+  {
+    "type": "Withdraw",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "bKash Payment",
+    "payment": "SLPayWithdrawal",
+    "status": "審核通過",
+    "nTrans": 56,
+    "currentPct": 98.2,
+    "dailyPct": 97.7,
+    "avgApproveMins": 5.5,
+    "maxApproveMins": 23.7,
+    "within5": 38,
+    "over5": 18
+  },
+  {
+    "type": "Withdraw",
+    "timeRange": "2026-05-13 08:00:00 ~ 2026-05-13 10:00:00",
+    "channel": "BKASH",
+    "rawChannel": "bKash Payment",
+    "payment": "SLPayWithdrawal",
+    "status": "審核不通過",
+    "nTrans": 1,
+    "currentPct": 1.8,
+    "dailyPct": 2.3,
+    "avgApproveMins": 34.3,
+    "maxApproveMins": 34.3,
+    "within5": 0,
+    "over5": 1
+  }
+];
+
+    const fields = {
+      type: { el: 'typeOptions', values: ['Deposit', 'Withdraw'] },
+      channel: { el: 'channelOptions', values: unique(DATA.map(d => d.channel)) },
+      payment: { el: 'paymentOptions', values: unique(DATA.map(d => d.payment)) },
+      status: { el: 'statusOptions', values: unique(DATA.map(d => d.status)) }
+    };
+
+    const state = {
+      type: new Set(fields.type.values),
+      channel: new Set(fields.channel.values),
+      payment: new Set(fields.payment.values),
+      status: new Set(fields.status.values)
+    };
+
+    function unique(arr) {
+      return [...new Set(arr)].sort((a, b) => String(a).localeCompare(String(b), 'zh-Hant'));
+    }
+
+    function fmtNum(n, digits = 0) {
+      if (!isFinite(n)) return '-';
+      return Number(n).toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+    }
+
+    function fmtPct(n, digits = 1) {
+      if (!isFinite(n)) return '-';
+      return fmtNum(n, digits) + '%';
+    }
+
+    function statusClass(status) {
+      return status === '審核通過' ? 'pass' : 'reject';
+    }
+
+    function typeClass(type) {
+      return type === 'Deposit' ? 'deposit' : 'withdraw';
+    }
+
+    function weightedAvg(rows, field) {
+      const total = rows.reduce((sum, r) => sum + r.nTrans, 0);
+      if (!total) return 0;
+      return rows.reduce((sum, r) => sum + (r[field] * r.nTrans), 0) / total;
+    }
+
+    function groupBy(rows, keyFn) {
+      return rows.reduce((acc, row) => {
+        const key = keyFn(row);
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(row);
+        return acc;
+      }, {});
+    }
+
+    function renderOptions() {
+      Object.entries(fields).forEach(([field, config]) => {
+        const box = document.getElementById(config.el);
+        box.innerHTML = config.values.map(value => `
+          <label class="choice">
+            <input type="checkbox" data-field="${field}" value="${escapeAttr(value)}" ${state[field].has(value) ? 'checked' : ''}>
+            <span>${escapeHtml(value)}</span>
+          </label>
+        `).join('');
+      });
+
+      document.querySelectorAll('input[type="checkbox"][data-field]').forEach(input => {
+        input.addEventListener('change', () => {
+          const field = input.dataset.field;
+          if (input.checked) state[field].add(input.value);
+          else state[field].delete(input.value);
+          render();
+        });
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+    function filteredData() {
+      return DATA.filter(d =>
+        state.type.has(d.type) &&
+        state.channel.has(d.channel) &&
+        state.payment.has(d.payment) &&
+        state.status.has(d.status)
+      );
+    }
+
+    function calculateKpis(rows) {
+      const total = rows.reduce((sum, r) => sum + r.nTrans, 0);
+      const passed = rows.filter(r => r.status === '審核通過').reduce((sum, r) => sum + r.nTrans, 0);
+      const rejected = total - passed;
+      const within5 = rows.reduce((sum, r) => sum + r.within5, 0);
+      const over5 = rows.reduce((sum, r) => sum + r.over5, 0);
+      const avg = weightedAvg(rows, 'avgApproveMins');
+      const max = rows.length ? Math.max(...rows.map(r => r.maxApproveMins)) : 0;
+      return {
+        total,
+        passed,
+        rejected,
+        within5,
+        over5,
+        passRate: total ? passed / total * 100 : 0,
+        rejectRate: total ? rejected / total * 100 : 0,
+        withinRate: total ? within5 / total * 100 : 0,
+        overRate: total ? over5 / total * 100 : 0,
+        avg,
+        max
+      };
+    }
+
+    function renderKpis(rows) {
+      const k = calculateKpis(rows);
+      const depositTotal = rows.filter(r => r.type === 'Deposit').reduce((sum, r) => sum + r.nTrans, 0);
+      const withdrawTotal = rows.filter(r => r.type === 'Withdraw').reduce((sum, r) => sum + r.nTrans, 0);
+      const avgClass = k.avg > 5 ? 'warn' : 'good';
+      const overClass = k.overRate > 20 ? 'bad' : k.overRate > 10 ? 'warn' : 'good';
+      const passClass = k.passRate >= 90 ? 'good' : k.passRate >= 75 ? 'warn' : 'bad';
+
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi">
+          <div class="name">總交易數</div>
+          <div class="value">${fmtNum(k.total)}</div>
+          <div class="note">Deposit ${fmtNum(depositTotal)} / Withdraw ${fmtNum(withdrawTotal)}</div>
+        </div>
+        <div class="kpi ${passClass}">
+          <div class="name">審核通過率</div>
+          <div class="value">${fmtPct(k.passRate)}</div>
+          <div class="note">通過 ${fmtNum(k.passed)}，不通過 ${fmtNum(k.rejected)}</div>
+        </div>
+        <div class="kpi ${avgClass}">
+          <div class="name">平均處理時間</div>
+          <div class="value">${fmtNum(k.avg, 1)} 分</div>
+          <div class="note">以交易數加權平均</div>
+        </div>
+        <div class="kpi ${k.max > 20 ? 'bad' : k.max > 10 ? 'warn' : 'good'}">
+          <div class="name">最大處理時間</div>
+          <div class="value">${fmtNum(k.max, 1)} 分</div>
+          <div class="note">篩選後最大值</div>
+        </div>
+        <div class="kpi ${overClass}">
+          <div class="name">超過 5 分鐘率</div>
+          <div class="value">${fmtPct(k.overRate)}</div>
+          <div class="note">超時 ${fmtNum(k.over5)} / 5 分內 ${fmtNum(k.within5)}</div>
+        </div>
+        <div class="kpi">
+          <div class="name">目前選取渠道</div>
+          <div class="value">${state.channel.size}</div>
+          <div class="note">Payment ${state.payment.size} 種 / 狀態 ${state.status.size} 種</div>
+        </div>
+      `;
+    }
+
+    function summarize(rows) {
+      const groups = groupBy(rows, r => `${r.type}||${r.channel}`);
+      return Object.entries(groups).map(([key, items]) => {
+        const [type, channel] = key.split('||');
+        const total = items.reduce((sum, r) => sum + r.nTrans, 0);
+        const passed = items.filter(r => r.status === '審核通過').reduce((sum, r) => sum + r.nTrans, 0);
+        const within5 = items.reduce((sum, r) => sum + r.within5, 0);
+        const over5 = items.reduce((sum, r) => sum + r.over5, 0);
+        const max = Math.max(...items.map(r => r.maxApproveMins));
+        const avg = weightedAvg(items, 'avgApproveMins');
+        return {
+          type,
+          channel,
+          total,
+          passed,
+          rejected: total - passed,
+          passRate: total ? passed / total * 100 : 0,
+          rejectRate: total ? (total - passed) / total * 100 : 0,
+          within5,
+          over5,
+          overRate: total ? over5 / total * 100 : 0,
+          avg,
+          max
+        };
+      }).sort((a, b) => b.total - a.total || b.overRate - a.overRate);
+    }
+
+    function renderSummary(rows) {
+      const summary = summarize(rows);
+      const body = document.getElementById('summaryBody');
+      if (!summary.length) {
+        body.innerHTML = `<tr><td colspan="10"><div class="empty">目前篩選條件沒有資料，請調整篩選項目。</div></td></tr>`;
+        return;
+      }
+      body.innerHTML = summary.map(r => `
+        <tr>
+          <td><span class="pill ${typeClass(r.type)}">${r.type}</span></td>
+          <td><strong>${escapeHtml(r.channel)}</strong></td>
+          <td class="num">${fmtNum(r.total)}</td>
+          <td class="num">${fmtPct(r.passRate)}</td>
+          <td class="num">${fmtPct(r.rejectRate)}</td>
+          <td class="num">${fmtNum(r.within5)}</td>
+          <td class="num">${fmtNum(r.over5)}</td>
+          <td class="num"><span class="pill ${r.overRate > 20 ? 'reject' : r.overRate > 10 ? 'warn' : 'pass'}">${fmtPct(r.overRate)}</span></td>
+          <td class="num">${fmtNum(r.avg, 1)}</td>
+          <td class="num">${fmtNum(r.max, 1)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDetails(rows) {
+      const body = document.getElementById('detailBody');
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="12"><div class="empty">目前篩選條件沒有資料，請調整篩選項目。</div></td></tr>`;
+        return;
+      }
+      body.innerHTML = rows
+        .slice()
+        .sort((a, b) => a.type.localeCompare(b.type) || a.channel.localeCompare(b.channel) || b.nTrans - a.nTrans)
+        .map(r => `
+          <tr>
+            <td><span class="pill ${typeClass(r.type)}">${r.type}</span></td>
+            <td><strong>${escapeHtml(r.channel)}</strong></td>
+            <td>${escapeHtml(r.rawChannel)}</td>
+            <td>${escapeHtml(r.payment)}</td>
+            <td><span class="pill ${statusClass(r.status)}">${escapeHtml(r.status)}</span></td>
+            <td class="num">${fmtNum(r.nTrans)}</td>
+            <td class="num">${fmtPct(r.currentPct)}</td>
+            <td class="num">${fmtPct(r.dailyPct)}</td>
+            <td class="num">${fmtNum(r.avgApproveMins, 1)}</td>
+            <td class="num">${fmtNum(r.maxApproveMins, 1)}</td>
+            <td class="num">${fmtNum(r.within5)}</td>
+            <td class="num">${fmtNum(r.over5)}</td>
+          </tr>
+        `).join('');
+    }
+
+    function renderBars(rows, targetId, metric) {
+      const summary = summarize(rows).sort((a, b) => b[metric] - a[metric]).slice(0, 8);
+      const target = document.getElementById(targetId);
+      if (!summary.length) {
+        target.innerHTML = `<div class="empty">目前沒有可繪製的資料。</div>`;
+        return;
+      }
+      const maxValue = Math.max(...summary.map(r => r[metric])) || 1;
+      target.innerHTML = summary.map(r => {
+        const value = r[metric];
+        const width = Math.max(2, value / maxValue * 100);
+        const label = `${r.type}｜${r.channel}`;
+        const display = metric === 'overRate' ? fmtPct(value) : `${fmtNum(value, 1)} 分`;
+        return `
+          <div class="bar-row" title="${escapeAttr(label)}">
+            <div class="bar-label">${escapeHtml(label)}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div>
+            <div class="num"><strong>${display}</strong></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderInsights(rows) {
+      const box = document.getElementById('insights');
+      const summary = summarize(rows);
+      if (!summary.length) {
+        box.innerHTML = `<div class="empty">目前沒有可判讀的資料。</div>`;
+        return;
+      }
+
+      const messages = [];
+      const k = calculateKpis(rows);
+
+      if (k.total > 0 && k.overRate <= 10 && k.avg <= 5) {
+        messages.push({ level: 'good', title: '整體處理效率穩定', text: `目前平均處理時間 ${fmtNum(k.avg, 1)} 分，超過五分鐘率 ${fmtPct(k.overRate)}，整體仍在可控範圍。` });
+      }
+
+      summary
+        .filter(r => r.overRate > 20 || r.avg > 5 || r.rejectRate > 20 || r.max > 20)
+        .sort((a, b) => b.overRate - a.overRate || b.avg - a.avg)
+        .slice(0, 6)
+        .forEach(r => {
+          let reasons = [];
+          if (r.overRate > 20) reasons.push(`超時率 ${fmtPct(r.overRate)}`);
+          if (r.avg > 5) reasons.push(`平均處理 ${fmtNum(r.avg, 1)} 分`);
+          if (r.max > 20) reasons.push(`最大處理 ${fmtNum(r.max, 1)} 分`);
+          if (r.rejectRate > 20) reasons.push(`拒絕率 ${fmtPct(r.rejectRate)}`);
+          messages.push({
+            level: r.overRate > 30 || r.rejectRate > 30 || r.max > 30 ? 'bad' : 'warn',
+            title: `${r.type}｜${r.channel} 需要關注`,
+            text: `${reasons.join('、')}。建議優先檢查此渠道是否有人工作業延遲、第三方回調異常或審核規則造成堆積。`
+          });
+        });
+
+      if (!messages.length) {
+        messages.push({ level: 'good', title: '未發現明顯異常', text: '目前篩選條件下沒有超時率、平均處理時間或拒絕率特別偏高的渠道。' });
+      }
+
+      box.innerHTML = messages.map(m => `
+        <div class="insight ${m.level}">
+          <strong>${escapeHtml(m.title)}</strong>
+          <p>${escapeHtml(m.text)}</p>
+        </div>
+      `).join('');
+    }
+
+    function render() {
+      const rows = filteredData();
+      document.getElementById('rowCountBadge').textContent = `${rows.length} 列明細`;
+      renderKpis(rows);
+      renderInsights(rows);
+      renderBars(rows, 'overBars', 'overRate');
+      renderBars(rows, 'avgBars', 'avg');
+      renderSummary(rows);
+      renderDetails(rows);
+    }
+
+    function setAll(field, checked) {
+      state[field] = checked ? new Set(fields[field].values) : new Set();
+      renderOptions();
+      render();
+    }
+
+    function exportCsv() {
+      const rows = filteredData();
+      const headers = ['type','channel','rawChannel','payment','status','nTrans','currentPct','dailyPct','avgApproveMins','maxApproveMins','within5','over5'];
+      const csv = [
+        headers.join(','),
+        ...rows.map(row => headers.map(h => `"${String(row[h]).replaceAll('"','""')}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'BDT_存提款處理時間營運報表.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const field = btn.dataset.target;
+        setAll(field, btn.dataset.action === 'all');
+      });
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      Object.keys(fields).forEach(field => {
+        state[field] = new Set(fields[field].values);
+      });
+      renderOptions();
+      render();
+    });
+
+    document.getElementById('applyBtn').addEventListener('click', render);
+    document.getElementById('exportBtn').addEventListener('click', exportCsv);
+
+    renderOptions();
+    render();
+  </script>
+</body>
+</html>
